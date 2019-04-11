@@ -51,19 +51,33 @@ wss.on('connection', (ws) => {
     console.log(`[${ PORT }] >>> Reciving a message from client ...`);
     const dataJson = JSON.parse(event.data);
     const dataType = dataJson.type;
-    if(dataType === "message") {
-      console.log(`[${dataJson.user}] >>> ${dataJson.text}`);
-      const messageID = uuidv4();
-      dataJson.text.id = messageID;
-      ws.send(JSON.stringify(dataJson));
-      // Broadcast to everyone else.
-      wss.clients.forEach(function each(client) {
-        if (client !== ws && client.readyState === WebSocket.OPEN) {
-          client.send(JSON.stringify(dataJson));
-        }
-      });
-    } else {
-      console.log(dataJson.text);
+    console.log("New Message Received...", dataJson);
+    switch(dataType) {
+      case "message": {
+        console.log(`[${dataJson.user.name}] >>> ${dataJson.text.content}, message...`);
+        const messageID = uuidv4();
+        dataJson.text.id = messageID;
+        ws.send(JSON.stringify(dataJson));
+        // Broadcast to everyone else.
+        wss.clients.forEach(function each(client) {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(dataJson));
+          }
+        });
+        break;
+      }
+      case "notification": {
+        console.log(`[${dataJson.user.name}] >>> ${dataJson.text.content}, norification...`);
+        const messageID = uuidv4();
+        dataJson.text.id = messageID;
+        wss.clients.forEach(function each(client) {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify(dataJson));
+          }
+        });
+        break;
+      }
+      default: console.log(dataJson.text); break;
     }
   }
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
