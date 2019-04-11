@@ -1,5 +1,3 @@
-// server.js
-
 const express = require('express');
 const WebSocket = require('ws');
 const SocketServer = WebSocket.Server;
@@ -23,31 +21,25 @@ const wss = new SocketServer({ server });
 // the ws parameter in the callback.
 
 wss.on('connection', (ws) => {
+  // Web Socket Connection Received and Welcome Message send to the client
   console.log(`[${ PORT }] >>> A client is connected ...`);
-  
   var msg = {
     type: "test",
     text: `[${ PORT }] >>> Welcome to the server!`,
     id:   serverID,
     date: Date.now()
   };
-
   ws.send(JSON.stringify(msg));
-
-  // ws.on('message', function incoming(data) {
-  //   console.log(data);
-  // });
 
   ws.onmessage = function (event) {
 
     console.log(`[${ PORT }] >>> Reciving a message from client ...`);
-    console.log(event.data);
     const dataJson = JSON.parse(event.data);
     const dataType = dataJson.type;
     if(dataType === "message") {
+      console.log(`[${dataJson.user}] >>> ${dataJson.text}`);
       const messageID = uuidv4();
       dataJson.text.id = messageID;
-      console.log("dataJason = ", dataJson);
       ws.send(JSON.stringify(dataJson));
       // Broadcast to everyone else.
       wss.clients.forEach(function each(client) {
@@ -56,25 +48,9 @@ wss.on('connection', (ws) => {
         }
       });
     } else {
-      console.log("dataType = ", dataType);
-      console.log("dataMsg = ", dataJson);
+      console.log(dataJson.text);
     }
-
-    
-
   }
-
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
-  ws.on('close', () => console.log('Client disconnected'));
+  ws.on('close', () => console.log(`[${ PORT }] >>> Client disconnected`));
 });
-
-// wss.on('connection', function connection(ws) {
-//   ws.on('message', function incoming(data) {
-//     // Broadcast to everyone else.
-//     wss.clients.forEach(function each(client) {
-//       if (client !== ws && client.readyState === WebSocket.OPEN) {
-//         client.send(data);
-//       }
-//     });
-//   });
-// });
