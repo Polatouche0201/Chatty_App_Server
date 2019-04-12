@@ -51,7 +51,7 @@ wss.on('connection', (ws) => {
     console.log(`[${ PORT }] >>> Reciving a message from client ...`);
     const dataJson = JSON.parse(event.data);
     const dataType = dataJson.type;
-    console.log("New Message Received...", dataJson);
+    // console.log("New Message Received...", dataJson);
     switch(dataType) {
       case "message": {
         console.log(`[${dataJson.user.name}] >>> ${dataJson.text.content}, message...`);
